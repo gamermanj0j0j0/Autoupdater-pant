@@ -1,0 +1,2 @@
+# PantKontroll compatibility revocation list.
+# Managed by admin/update_policy.py; do not add raw hardware values.
