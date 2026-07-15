@@ -1,0 +1,16 @@
+{
+  "payload": {
+    "deny_all": false,
+    "issued_at": "2026-07-15T12:19:40Z",
+    "min_version": "0.0.0",
+    "revoked_anchors": [],
+    "revoked_devices": [],
+    "schema": 1,
+    "sequence": 3
+  },
+  "signature": {
+    "algorithm": "Ed25519",
+    "key_id": "pant-access-v1",
+    "value": "cgE3qZbC76aVPiy8kY5sWVqwr8aIB0QEVlndIYCLM463G4SWmY3AtsnEUy14zsUSaDRGF1Szyax4jQlAIqARBA=="
+  }
+}
