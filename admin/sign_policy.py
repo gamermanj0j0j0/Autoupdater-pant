@@ -14,15 +14,33 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 
-from pant_app.access import canonical_policy_bytes, verify_policy_envelope  # noqa: E402
+try:
+    from .update_policy import _read_envelope
+except ImportError:  # Executed directly as ``python admin/sign_policy.py``.
+    from update_policy import _read_envelope
+
+
+def canonical_policy_bytes(payload: dict[str, Any]) -> bytes:
+    """Return the exact canonical byte representation verified by clients."""
+
+    try:
+        encoded = json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Policy payload is not canonicalisable") from exc
+    return encoded.encode("utf-8")
 
 
 def _reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -96,14 +114,17 @@ def sign_envelope(
         raise ValueError("Policy envelope must contain only payload and signature")
     if re.fullmatch(r"[A-Za-z0-9._-]{1,64}", key_id) is None:
         raise ValueError("key_id must contain 1-64 safe characters")
-    signature = private_key.sign(canonical_policy_bytes(envelope["payload"]))
+    canonical = canonical_policy_bytes(envelope["payload"])
+    signature = private_key.sign(canonical)
     envelope["signature"] = {
         "algorithm": "Ed25519",
         "key_id": key_id,
         "value": base64.b64encode(signature).decode("ascii"),
     }
-    # Verify our final strict envelope before it can be written.
-    verify_policy_envelope(envelope, private_key.public_key())
+    try:
+        private_key.public_key().verify(signature, canonical)
+    except InvalidSignature as exc:  # Defensive check before writing the file.
+        raise ValueError("Policy signature verification failed") from exc
     return envelope
 
 
@@ -128,12 +149,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError(f"Set {arguments.key_env} or use --private-key-file")
             key_material = value.encode("utf-8")
         private_key = _load_private_key(key_material)
-        envelope = json.loads(
-            arguments.policy.read_text(encoding="utf-8-sig"),
-            object_pairs_hook=_reject_duplicates,
-        )
-        if not isinstance(envelope, dict):
-            raise ValueError("Policy envelope must be an object")
+        envelope = _read_envelope(arguments.policy)
         sign_envelope(envelope, private_key, key_id=arguments.key_id)
         encoded = (
             json.dumps(envelope, ensure_ascii=False, indent=2, sort_keys=True) + "\n"

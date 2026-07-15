@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import tempfile
 from datetime import UTC, datetime
@@ -14,14 +15,22 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from pant_app.device_id import is_anchor_token, is_device_id  # noqa: E402
-
-
 VALID_ACTIONS = ("revoke", "restore", "deny_all", "allow_all")
 VALID_KINDS = ("device", "anchor")
+_DEVICE_ID_RE = re.compile(r"^dev1_[0-9a-f]{64}$")
+_ANCHOR_TOKEN_RE = re.compile(r"^anc1_(tpm|smbios|disk)_[0-9a-f]{64}$")
+
+
+def is_device_id(value: str) -> bool:
+    """Validate the pseudonymous device token without importing the client."""
+
+    return bool(_DEVICE_ID_RE.fullmatch(value))
+
+
+def is_anchor_token(value: str) -> bool:
+    """Validate the pseudonymous hardware-anchor token used by the client."""
+
+    return bool(_ANCHOR_TOKEN_RE.fullmatch(value))
 
 
 def _reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
