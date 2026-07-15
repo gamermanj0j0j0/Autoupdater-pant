@@ -1,16 +1,16 @@
 {
   "payload": {
     "deny_all": false,
-    "issued_at": "2026-07-15T13:36:50Z",
+    "issued_at": "2026-07-15T13:38:56Z",
     "min_version": "0.0.0",
     "revoked_anchors": [],
     "revoked_devices": [],
     "schema": 1,
-    "sequence": 4
+    "sequence": 5
   },
   "signature": {
     "algorithm": "Ed25519",
     "key_id": "pant-access-v1",
-    "value": "3nws2CWJoAx3bc2WL/klmKUGfAKzhlWLDzoa8S/sA59FWgAJWk+fGf5hqqtk5tOKVm6WJ1Jk8wR4pPt5O0CnDQ=="
+    "value": "SemD2qflLo1dTWHQA6EcTWGHviEDOL6qNqvqQ1odEHzLlREtm+GVhfHpDk08TAdfXu7B+D/7cywgpJG/NdoECg=="
   }
 }
