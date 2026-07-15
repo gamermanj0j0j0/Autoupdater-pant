@@ -1,2 +1,3 @@
 # PantKontroll compatibility revocation list.
 # Managed by admin/update_policy.py; do not add raw hardware values.
+dev1_d4e864544df208c6a45f7c5137af6c4d18c411cef5d1c983e0a4548cbf770c3f
